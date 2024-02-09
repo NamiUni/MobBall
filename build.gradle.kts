@@ -3,7 +3,7 @@ import xyz.jpenilla.runpaper.task.RunServerTask
 
 plugins {
     id("java")
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("xyz.jpenilla.run-paper") version "2.2.3"
     id("net.minecrell.plugin-yml.bukkit") version "0.5.1"
 }
