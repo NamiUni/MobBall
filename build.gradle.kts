@@ -44,7 +44,7 @@ dependencies {
     implementation("co.aikar", "taskchain-bukkit", "3.7.2")
 
     // Plugins
-    compileOnly("com.github.TechFortress:GriefPrevention:16.18")
+    compileOnly("com.github.TechFortress:GriefPrevention:17.0.0")
 
 }
 
