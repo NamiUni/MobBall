@@ -1,32 +1,26 @@
 package com.github.namiuni.mobball.command.commands;
 
-import cloud.commandframework.CommandManager;
-import com.github.namiuni.mobball.MobBall;
 import com.github.namiuni.mobball.command.MobBallCommand;
-import com.github.namiuni.mobball.config.ConfigFactory;
+import com.github.namiuni.mobball.config.ConfigManager;
 import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
-
-import java.util.List;
+import org.incendo.cloud.CommandManager;
 
 @DefaultQualifier(NonNull.class)
-public class ListCommand implements MobBallCommand {
+public final class ListCommand implements MobBallCommand {
 
-    final MobBall mobBall;
-    final CommandManager<CommandSender> commandManager;
-    final ConfigFactory configFactory;
+    private final CommandManager<CommandSender> commandManager;
+    private final ConfigManager configFactory;
 
     @Inject
     public ListCommand(
-            MobBall mobBall,
-            CommandManager<CommandSender> commandManager,
-            ConfigFactory configFactory
+            final CommandManager<CommandSender> commandManager,
+            final ConfigManager configFactory
     ) {
-        this.mobBall = mobBall;
         this.commandManager = commandManager;
         this.configFactory = configFactory;
     }
@@ -38,21 +32,22 @@ public class ListCommand implements MobBallCommand {
                 .permission("mobball.list")
                 .senderType(CommandSender.class)
                 .handler(context -> {
-                    var mobNames = configFactory.primaryConfig().allowedMOBs().stream()
+                    final var capturableMobs = configFactory.primaryConfig().capturableMOBs().stream()
                             .map(Component::translatable)
-                            .map(mobNameComponent -> Component.text()
-                                    .append(mobNameComponent)
+                            .reduce((mobName1, mobName2) -> mobName1
                                     .append(Component.text(", "))
-                                    .build()
-                            )
-                            .toList();
-                    var mm = MiniMessage.miniMessage();
-                    List<Component> component = List.of(
-                            mm.deserialize("<red><st>                            </st><white>ゲット出来るMOB一覧</white><st>                            </st></red>"),
-                            Component.text().append(mobNames).build(),
-                            mm.deserialize("<red><st>                                                                               </st><red>")
-                    );
-                    component.forEach(message -> context.getSender().sendMessage(message));
+                                    .append(mobName2))
+                            .orElse(Component.translatable(""));
+
+                    final var mm = MiniMessage.miniMessage();
+                    final var message = Component.text()
+                            .append(mm.deserialize("<red><st>                            </st><white>ゲット出来るMOB一覧</white><st>                            </st></red>"))
+                            .append(capturableMobs)
+                            .append(Component.newline())
+                            .append(mm.deserialize("<red><st>                                                                               </st><red>"))
+                            .build();
+
+                    context.sender().sendMessage(message);
                 })
                 .build();
 

@@ -1,26 +1,29 @@
 package com.github.namiuni.mobball.command.commands;
 
-import cloud.commandframework.CommandManager;
-import com.github.namiuni.mobball.MobBall;
+import com.github.namiuni.mobball.capture.BallRegistry;
 import com.github.namiuni.mobball.command.MobBallCommand;
-import com.github.namiuni.mobball.event.events.MobBallReloadEvent;
+import com.github.namiuni.mobball.config.ConfigManager;
 import com.google.inject.Inject;
 import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.incendo.cloud.CommandManager;
 
 @DefaultQualifier(NonNull.class)
-public class ReloadCommand implements MobBallCommand {
+public final class ReloadCommand implements MobBallCommand {
 
-    final MobBall mobBall;
-    final CommandManager<CommandSender> commandManager;
+    private final ConfigManager configManager;
+    private final BallRegistry ballRegistry;
+    private final CommandManager<CommandSender> commandManager;
 
     @Inject
     public ReloadCommand(
-            MobBall mobBall,
-            CommandManager<CommandSender> commandManager
+            final ConfigManager configManager,
+            final BallRegistry ballRegistry,
+            final CommandManager<CommandSender> commandManager
     ) {
-        this.mobBall = mobBall;
+        this.configManager = configManager;
+        this.ballRegistry = ballRegistry;
         this.commandManager = commandManager;
     }
 
@@ -31,8 +34,9 @@ public class ReloadCommand implements MobBallCommand {
                 .permission("mobball.reload")
                 .senderType(CommandSender.class)
                 .handler(context -> {
-                    this.mobBall.eventHandler().emit(new MobBallReloadEvent());
-                    context.getSender().sendRichMessage("<aqua>設定をリロードしました");
+                    this.configManager.reloadPrimaryConfig();
+                    this.ballRegistry.reloadRegisteredBallType();
+                    context.sender().sendRichMessage("<aqua>設定をリロードしました");
                 })
                 .build();
 

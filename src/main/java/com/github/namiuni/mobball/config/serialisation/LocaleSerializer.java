@@ -17,11 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.github.namiuni.mobball.serialisation;
+package com.github.namiuni.mobball.config.serialisation;
 
 import com.google.inject.Inject;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import net.kyori.adventure.translation.Translator;
-import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -35,12 +35,12 @@ import java.util.Locale;
 import static java.util.Objects.requireNonNull;
 
 @DefaultQualifier(NonNull.class)
-public class LocaleSerializerConfigurate implements TypeSerializer<Locale> {
+public class LocaleSerializer implements TypeSerializer<Locale> {
 
-    private final Logger logger;
+    private final ComponentLogger logger;
 
     @Inject
-    public LocaleSerializerConfigurate(final Logger logger) {
+    public LocaleSerializer(final ComponentLogger logger) {
         this.logger = logger;
     }
 

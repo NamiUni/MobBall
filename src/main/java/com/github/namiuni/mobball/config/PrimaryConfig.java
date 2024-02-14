@@ -1,7 +1,7 @@
 package com.github.namiuni.mobball.config;
 
-import it.unimi.dsi.fastutil.Pair;
-import net.kyori.adventure.text.format.TextDecoration;
+import com.github.namiuni.mobball.util.ItemStackBuilder;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -16,45 +16,40 @@ import java.util.stream.Collectors;
 
 @ConfigSerializable
 @DefaultQualifier(NonNull.class)
-public class PrimaryConfig {
+public final class PrimaryConfig {
 
-    private PluginHooks pluginHooks = new PluginHooks();
-    private Map<String, BallSettings> ballItems = Map.of("moripa", new BallSettings());
-    private List<String> allowedMobs = List.of(
+    private Integration integration = new Integration();
+    private Map<String, ItemStack> ballItems = Map.of(
+            "moripa",
+            ItemStackBuilder.of(Material.SNOWBALL)
+                    .displayName(MiniMessage.miniMessage().deserialize("<#66bb6a><b>もりぱボール"))
+                    .loreList(
+                            MiniMessage.miniMessage().deserialize("<white>MOBを捕まえられるボール"),
+                            MiniMessage.miniMessage().deserialize("<white>捕まえたMOBはボールを投げれば召喚できる"),
+                            MiniMessage.miniMessage().deserialize("<white>一度召喚するとボールは消滅する")
+                    )
+                    .customModelData(10)
+                    .build()
+    );
+    private List<String> capturableMobs = List.of(
             "pig", "cow", "chicken", "mushroom_cow", "sheep", "rabbit", "fox",
             "parrot", "cat", "wolf", "llama",
             "horse", "donkey", "mule",
             "allay", "polar_bear", "panda", "goat", "squid", "glow_squid"
     );
 
-    public PluginHooks pluginHooks() {
-        return this.pluginHooks;
+    public Integration integration() {
+        return this.integration;
     }
 
-    public Map<String, ItemStack> bollItems() {
-        return this.ballItems.entrySet().stream()
-                .map(entry -> Pair.of(entry.getKey(), createBall(entry.getValue())))
-                .collect(Collectors.toMap(Pair::key, Pair::value));
+    public Map<String, ItemStack> ballItems() {
+        return this.ballItems;
     }
 
-    public Set<EntityType> allowedMOBs() {
-        return this.allowedMobs.stream()
+    public Set<EntityType> capturableMOBs() {
+        return this.capturableMobs.stream()
                 .map(String::toUpperCase)
                 .map(EntityType::valueOf)
                 .collect(Collectors.toSet());
-    }
-
-    private ItemStack createBall(BallSettings ballSettings) {
-        ItemStack ball = new ItemStack(Material.SNOWBALL);
-        ball.editMeta(itemMeta -> {
-            if (ballSettings.customModelData() != null) {
-                itemMeta.setCustomModelData(ballSettings.customModelData());
-            }
-            itemMeta.displayName(ballSettings.name().decoration(TextDecoration.ITALIC, false));
-            itemMeta.lore(ballSettings.lore().stream()
-                    .map(component -> component.decoration(TextDecoration.ITALIC, false))
-                    .toList());
-        });
-        return ball;
     }
 }
