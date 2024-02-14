@@ -33,7 +33,7 @@ dependencies {
 
 paper {
     name = rootProject.name
-    version = "1.0"
+    version = "1.1"
     main = "com.github.namiuni.mobball.MobBall"
     apiVersion = "1.20"
     description = "MOB収納ボールプラグイン"
@@ -55,8 +55,7 @@ paper {
 tasks {
     shadowJar {
         this.archiveClassifier.set(null as String?)
-        relocate("io.papermc.lib", "com.github.namiuni.mobball.paperlib")
-        relocate("co.aikar.taskchain", "com.github.namiuni.mobball.taskchain")
+        this.archiveVersion.set(paper.version)
     }
 
     runServer {
