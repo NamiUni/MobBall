@@ -6,13 +6,13 @@ import com.github.namiuni.mobball.hook.GriefPreventionHooks;
 import com.github.namiuni.mobball.wrapper.WrappedEntity;
 import com.github.namiuni.mobball.wrapper.WrappedSnowBall;
 import com.google.inject.Inject;
-import org.bukkit.entity.Entity;
+import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
-import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 import java.util.Objects;
@@ -27,69 +27,63 @@ public final class CaptureHandler {
         this.configManager = configManager;
     }
 
-    public void handleInteractEntity(final Entity clickedEntity, final Player player) {
-        if (!player.isSneaking()) {
+    public void handleInteractEvent(final PlayerInteractEntityEvent event) {
+        if (event.isCancelled()) {
             return;
         }
 
-        final var wrappedEntity = WrappedEntity.create(clickedEntity);
-
-        if (wrappedEntity.wrappedItem() == null) {
+        if (!event.getPlayer().isSneaking()) {
             return;
         }
 
-        if (!player.getUniqueId().equals(wrappedEntity.ownerUUID())) {
-            return;
-        }
+        final var wrappedRightClicked = WrappedEntity.create(event.getRightClicked());
+        if (event.getPlayer().getUniqueId().equals(wrappedRightClicked.ownerUUID()) && wrappedRightClicked.ballType() != null) {
+            final var ballItem = wrappedRightClicked.ballType();
+            final var clickedEntity = wrappedRightClicked.entity();
 
-        final var ballItem = wrappedEntity.wrappedItem();
-        ballItem.entity(wrappedEntity);
-        clickedEntity.getWorld().dropItem(clickedEntity.getLocation(), ballItem.itemStack());
-        clickedEntity.remove();
+            ballItem.entity(wrappedRightClicked);
+            clickedEntity.getWorld().dropItem(clickedEntity.getLocation(), ballItem.itemStack());
+            clickedEntity.remove();
+        }
     }
 
-    public void handleProjectile(final Projectile projectile, final @Nullable Entity hitEntity) {
-
-        if (!(projectile instanceof Snowball snowball)) {
+    public void handleDamageEvent(final EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Snowball snowball)) {
             return;
         }
 
         final var wrappedSnowBall = WrappedSnowBall.create(snowball);
-        final @Nullable WrappedEntity wrappedHitEntity = hitEntity != null
-                ? WrappedEntity.create(hitEntity)
-                : null;
+        if (wrappedSnowBall.wrappedItem().ballType() != null) {
+            if (!wrappedSnowBall.wrappedItem().hasEntity()) {
+                final var wrappedHitEntity = WrappedEntity.create(event.getEntity());
+                this.tryCapture(wrappedSnowBall, wrappedHitEntity, event.isCancelled());
+            }
 
-        if (wrappedSnowBall.wrappedItem().ballType() == null) {
+            event.setCancelled(true);
+        }
+    }
+
+    public void handleHitEvent(final ProjectileHitEvent event) {
+        if (!(event.getEntity() instanceof Snowball snowball)) {
             return;
         }
 
-        if (wrappedSnowBall.wrappedItem().hasEntity()) {
-            this.handleExistBall(wrappedSnowBall);
-        } else if (wrappedHitEntity != null){
-            this.handleEmptyBall(wrappedSnowBall, wrappedHitEntity);
-        }
-    }
-
-    private void handleExistBall(final WrappedSnowBall wrappedSnowBall) {
-        final var capturedEntity = Objects.requireNonNull(wrappedSnowBall.wrappedItem().entity());
-        final @Nullable ProjectileSource shooter = wrappedSnowBall.snowball().getShooter();
-        if (shooter instanceof Player player) {
-            final var hitLocation = wrappedSnowBall.snowball().getLocation();
-            if (MobBall.gpLoaded() && GriefPreventionHooks.isClaim(hitLocation) && !GriefPreventionHooks.hasClaimPermission(player, hitLocation)) {
-                capturedEntity.remove();
-                this.dropBall(wrappedSnowBall.snowball());
-                return;
+        final var wrappedSnowBall = WrappedSnowBall.create(snowball);
+        if (wrappedSnowBall.wrappedItem().ballType() != null && wrappedSnowBall.wrappedItem().hasEntity()) {
+            if (event.getHitEntity() != null) {
+                event.setCancelled(true);
+            } else if (event.getHitBlock() != null) {
+                this.trySummon(wrappedSnowBall, event.isCancelled());
             }
-            capturedEntity.spawnAt(wrappedSnowBall.snowball().getLocation());
-
-        } else {
-            capturedEntity.remove();
-            this.dropBall(wrappedSnowBall.snowball());
         }
     }
 
-    private void handleEmptyBall(final WrappedSnowBall wrappedSnowBall, final WrappedEntity wrappedEntity) {
-        if (!configManager.primaryConfig().capturableMOBs().contains(wrappedEntity.entity().getType())) {
+    private void tryCapture(final WrappedSnowBall wrappedSnowBall, final WrappedEntity targetEntity, final boolean eventCanceled) {
+        if (eventCanceled) {
+            return;
+        }
+
+        if (!configManager.primaryConfig().capturableMOBs().contains(targetEntity.entity().getType())) {
             return;
         }
 
@@ -97,26 +91,43 @@ public final class CaptureHandler {
             return;
         }
 
-        if (!wrappedEntity.checkTamable(player.getUniqueId())) {
+        if (!targetEntity.checkTamable(player.getUniqueId())) {
             return;
         }
 
-        if (MobBall.gpLoaded() && GriefPreventionHooks.isClaim(wrappedEntity.entity().getLocation()) && !GriefPreventionHooks.hasClaimPermission(player, wrappedEntity.entity().getLocation())) {
+        if (targetEntity.ownerUUID() == null && targetEntity.ballType() == null) {
+            targetEntity.ballType(Objects.requireNonNull(wrappedSnowBall.wrappedItem().ballType()));
+            targetEntity.ownerUUID(player.getUniqueId());
+
+            final var wrappedItem = wrappedSnowBall.wrappedItem();
+            wrappedItem.entity(targetEntity);
+
+            final var location = wrappedSnowBall.snowball().getLocation();
+            wrappedSnowBall.snowball().getWorld().dropItem(location, wrappedItem.itemStack());
+            targetEntity.entity().remove();
+        }
+    }
+
+    private void trySummon(final WrappedSnowBall wrappedSnowBall, final boolean eventCanceled) {
+        if (eventCanceled) {
+            this.dropBall(wrappedSnowBall.snowball());
             return;
         }
 
-        if (wrappedEntity.ownerUUID() != null && wrappedEntity.wrappedItem() != null) {
+        if (wrappedSnowBall.snowball().getOwnerUniqueId() == null) {
+            this.dropBall(wrappedSnowBall.snowball());
             return;
         }
 
-        wrappedEntity.wrappedItem(Objects.requireNonNull(wrappedSnowBall.wrappedItem().ballType()));
-        wrappedEntity.ownerUUID(player.getUniqueId());
+        if (MobBall.gpLoaded()
+                && this.configManager.primaryConfig().integration().griefPrevention().enable()
+                && !GriefPreventionHooks.hasClaimPermissionOrIsNotClaim(wrappedSnowBall.snowball().getOwnerUniqueId(), wrappedSnowBall.snowball().getLocation(), ClaimPermission.Inventory)) {
+            this.dropBall(wrappedSnowBall.snowball());
+            return;
+        }
 
-        final var wrappedItem = wrappedSnowBall.wrappedItem();
-        wrappedItem.entity(wrappedEntity);
-        final var location = wrappedSnowBall.snowball().getLocation();
-        wrappedSnowBall.snowball().getWorld().dropItem(location, wrappedItem.itemStack());
-        wrappedEntity.entity().remove();
+        final var capturedEntity = Objects.requireNonNull(wrappedSnowBall.wrappedItem().entity());
+        capturedEntity.spawnAt(wrappedSnowBall.snowball().getLocation());
     }
 
     private void dropBall(final Snowball snowball) {

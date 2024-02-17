@@ -4,10 +4,11 @@ import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
+
+import java.util.UUID;
 
 @DefaultQualifier(NonNull.class)
 public final class GriefPreventionHooks {
@@ -18,21 +19,18 @@ public final class GriefPreventionHooks {
 
     private static @MonotonicNonNull GriefPrevention griefPrevention = null;
 
-    public static boolean isClaim(final Location targetLocation) {
-        final var dataStore = griefPrevention().dataStore;
-        final var claim = dataStore.getClaimAt(targetLocation, true, null);
-
-        return claim != null;
-    }
-
-    public static boolean hasClaimPermission(final Player player, final Location targetLocation) {
+    public static boolean hasClaimPermissionOrIsNotClaim(final UUID uuid, final Location targetLocation, final ClaimPermission claimPermission) {
         try {
             final var dataStore = griefPrevention().dataStore;
             final var claim = dataStore.getClaimAt(targetLocation, true, null);
 
-            return claim.getOwnerID().equals(player.getUniqueId()) ||
-                    claim.hasExplicitPermission(player, ClaimPermission.Build) ||
-                    dataStore.getPlayerData(player.getUniqueId()).ignoreClaims;
+            if (claim == null) {
+                return true;
+            }
+
+            return claim.getOwnerID().equals(uuid)
+                    || claim.hasExplicitPermission(uuid, claimPermission)
+                    || dataStore.getPlayerData(uuid).ignoreClaims;
 
         } catch (Exception ex) {
             ComponentLogger.logger().error(ex.getMessage());

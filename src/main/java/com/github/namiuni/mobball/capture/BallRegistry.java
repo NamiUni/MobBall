@@ -50,6 +50,6 @@ public final class BallRegistry {
     }
 
     public @Nullable WrappedItem get(String key) {
-        return this.registeredTypeMap.get(key);
+        return WrappedItem.create(this.registeredTypeMap.get(key).itemStack().clone());
     }
 }

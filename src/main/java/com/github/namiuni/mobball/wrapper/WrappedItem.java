@@ -7,8 +7,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -76,7 +76,7 @@ public final class WrappedItem {
             lore.add(Component.text("Health: ")
                     .append(Component.text(health + " / " + maxHealth)));
 
-            if (entity instanceof Horse horse) {
+            if (entity instanceof AbstractHorse horse) {
                 final var speed = 42.162962963 * Objects.requireNonNull(horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).getValue();
                 lore.add(Component.text("Speed: ")
                         .append(Component.text(new DecimalFormat("0.00").format(speed)))

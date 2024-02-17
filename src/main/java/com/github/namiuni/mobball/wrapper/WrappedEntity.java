@@ -64,11 +64,11 @@ public final class WrappedEntity {
         this.entity.getPersistentDataContainer().set(NamespacedKeyUtils.ownerUuidKey(), UUIDDataType.INSTANCE, ownerUUID);
     }
 
-    public @Nullable WrappedItem wrappedItem() {
+    public @Nullable WrappedItem ballType() {
         return this.wrappedItem;
     }
 
-    public void wrappedItem(final String ballType) {
+    public void ballType(final String ballType) {
         this.entity.getPersistentDataContainer().set(NamespacedKeyUtils.ballTypeKey(), PersistentDataType.STRING, ballType);
     }
 }
