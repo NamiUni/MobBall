@@ -5,6 +5,7 @@ import com.github.namiuni.mobball.command.MobBallCommand;
 import com.github.namiuni.mobball.command.commands.GiveCommand;
 import com.github.namiuni.mobball.command.commands.ListCommand;
 import com.github.namiuni.mobball.command.commands.ReloadCommand;
+import com.github.namiuni.mobball.listeners.GriefPreventionListener;
 import com.github.namiuni.mobball.listeners.MobBallListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -17,16 +18,16 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 
 @Singleton
 @DefaultQualifier(NonNull.class)
 public final class MobBall extends JavaPlugin {
 
-    private static final Set<Class<? extends Listener>> LISTENER_CLASSES = Set.of(
-            MobBallListener.class
-    );
-    private static final Set<Class<? extends MobBallCommand>> COMMAND_CLASSES = Set.of(
+    private final Set<Class<? extends Listener>> LISTENER_CLASSES = new HashSet<>();
+
+    private final Set<Class<? extends MobBallCommand>> COMMAND_CLASSES = Set.of(
             ReloadCommand.class, GiveCommand.class, ListCommand.class
     );
 
@@ -35,6 +36,12 @@ public final class MobBall extends JavaPlugin {
     @Override
     public void onLoad() {
         this.injector = Guice.createInjector(new MobBallModule(this, this.dataDirectory()));
+
+        LISTENER_CLASSES.add(MobBallListener.class);
+        if (gpLoaded()) {
+            LISTENER_CLASSES.add(GriefPreventionListener.class);
+        }
+
         MobBallProvider.register(this);
     }
 

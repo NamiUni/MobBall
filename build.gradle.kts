@@ -10,7 +10,6 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://repo.papermc.io/repository/maven-public/")
-
 }
 
 dependencies {
@@ -61,7 +60,7 @@ tasks {
     runServer {
         minecraftVersion("1.20.4")
         downloadPlugins {
-            url("https://dev.bukkit.org/projects/grief-prevention/files/4784167/download")
+            //url("https://dev.bukkit.org/projects/grief-prevention/files/4784167/download")
             url("https://download.luckperms.net/1530/bukkit/loader/LuckPerms-Bukkit-5.4.117.jar")
         }
     }
