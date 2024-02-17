@@ -1,6 +1,7 @@
 package com.github.namiuni.mobball.wrapper;
 
 import com.github.namiuni.mobball.util.ItemStackBuilder;
+import com.github.namiuni.mobball.util.LegacyUpdater;
 import com.github.namiuni.mobball.util.NamespacedKeyUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -28,6 +29,7 @@ public final class WrappedItem {
 
     private WrappedItem(final ItemStack itemStack) {
         this.itemStack = itemStack;
+        LegacyUpdater.updateIfNeeded(this.itemStack);
     }
 
     public static WrappedItem create(final ItemStack itemStack) {

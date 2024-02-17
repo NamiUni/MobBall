@@ -32,7 +32,7 @@ dependencies {
 
 paper {
     name = rootProject.name
-    version = "1.1.2"
+    version = "1.1.3"
     main = "com.github.namiuni.mobball.MobBall"
     apiVersion = "1.20"
     description = "MOB収納ボールプラグイン"
