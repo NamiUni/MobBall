@@ -37,7 +37,7 @@ public final class CaptureHandler {
         }
 
         final var playerInventory = event.getPlayer().getInventory();
-        if (playerInventory.getItemInMainHand().isEmpty() || playerInventory.getItemInOffHand().isEmpty()) {
+        if (playerInventory.getItemInMainHand().isEmpty()) {
             return;
         }
 
