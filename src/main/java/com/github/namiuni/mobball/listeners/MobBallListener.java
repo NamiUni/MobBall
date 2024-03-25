@@ -27,12 +27,12 @@ public final class MobBallListener implements Listener {
         this.configManager = configManager;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInteractEntity(final PlayerInteractEntityEvent event) {
         this.captureHandler.handleInteractEvent(event);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onHit(final ProjectileHitEvent event) {
         this.captureHandler.handleHitEvent(event);
     }

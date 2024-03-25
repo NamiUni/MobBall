@@ -37,12 +37,15 @@ public final class CaptureHandler {
         }
 
         final var playerInventory = event.getPlayer().getInventory();
-        if (playerInventory.getItemInMainHand().isEmpty()) {
+        if (!playerInventory.getItemInMainHand().isEmpty()) {
             return;
         }
 
         final var wrappedRightClicked = WrappedEntity.create(event.getRightClicked());
         if (event.getPlayer().getUniqueId().equals(wrappedRightClicked.ownerUUID()) && wrappedRightClicked.ballType() != null) {
+
+            event.setCancelled(true);
+
             final var ballItem = wrappedRightClicked.ballType();
             final var clickedEntity = wrappedRightClicked.entity();
 
