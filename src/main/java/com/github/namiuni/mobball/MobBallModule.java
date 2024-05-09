@@ -32,16 +32,13 @@ public final class MobBallModule extends AbstractModule {
     @Singleton
     public CommandManager<CommandSender> commandManager() {
         final PaperCommandManager<CommandSender> commandManager;
-        try {
-            commandManager = new PaperCommandManager<>(
-                    this.mobBall,
-                    ExecutionCoordinator.simpleCoordinator(),
-                    SenderMapper.identity()
-            );
-        } catch (final Exception exception) {
-            this.mobBall.getComponentLogger().error("Failed to initialize command manager.", exception);
-            throw exception;
-        }
+        commandManager = new PaperCommandManager<>(
+                this.mobBall,
+                ExecutionCoordinator.simpleCoordinator(),
+                SenderMapper.identity()
+        );
+
+        commandManager.registerAsynchronousCompletions();
 
         return commandManager;
     }

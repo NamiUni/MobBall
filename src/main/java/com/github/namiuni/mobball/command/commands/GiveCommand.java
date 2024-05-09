@@ -1,13 +1,14 @@
 package com.github.namiuni.mobball.command.commands;
 
-import com.github.namiuni.mobball.wrapper.WrappedItem;
 import com.github.namiuni.mobball.command.BallItemParser;
 import com.github.namiuni.mobball.command.MobBallCommand;
+import com.github.namiuni.mobball.wrapper.WrappedItem;
 import com.google.inject.Inject;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
 
@@ -28,7 +29,7 @@ public final class GiveCommand implements MobBallCommand {
 
     @Override
     public void init() {
-        final var command = this.commandManager.commandBuilder("mobball", "mb")
+        final Command<CommandSender> command = this.commandManager.commandBuilder("mobball", "mb")
                 .literal("give")
                 .required("player", PlayerParser.playerParser())
                 .required("ball", ballItemParser.ballParser())
